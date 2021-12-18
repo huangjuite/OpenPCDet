@@ -48,7 +48,7 @@ def read_label(f):
         width = float(l[1][6])
         height = float(l[1][7])
         ry = float(l[1][8])
-        det_lines.append('%s, %d, %d, %d, %d, %d, %d, %d, %f, %f, %f, %f, %f, %f, %f\n' % (
+        det_lines.append('%s %d %d %d %d %d %d %d %f %f %f %f %f %f %f\n' % (
             ctype, 0, 0, 0, 1, 2, 3, 4, height, width, length, pos[0], pos[1], pos[2], ry))
 
     return det_lines
