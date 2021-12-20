@@ -25,7 +25,7 @@ DATA_AUGMENTOR:
               - kitti_dbinfos_train.pkl
           PREPARE: {
              filter_by_min_points: ['Car:5', 'Pedestrian:5', 'Cyclist:5'],
-             filter_by_difficulty: [-1],
+             filter_by_difficulty: [],
           }
 
           SAMPLE_GROUPS: ['Car:20','Pedestrian:15', 'Cyclist:15']
