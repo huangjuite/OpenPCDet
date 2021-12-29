@@ -68,11 +68,26 @@ def boxes_to_corners_3d(boxes3d):
     return corners3d.numpy() if is_numpy else corners3d
 
 
+range_limit = [0, -40, -3, 70, 40, 1]
+
+
 def read_txt(f):
     pnp = pd.read_csv(f, sep=",", header=None).to_numpy().astype(
-        np.float32)[:, :4]
+        np.float32)
+    pnp = pnp[np.where(pnp[:, -1] == 1)][:, :4]
     pnp[:, 3] = 0
+
+    pnp = pnp[np.where(pnp[:, 0] < range_limit[3])]
+    pnp = pnp[np.where(pnp[:, 1] > range_limit[1])]
+    pnp = pnp[np.where(pnp[:, 1] < range_limit[4])]
+    pnp = pnp[np.where(pnp[:, 2] > range_limit[2])]
+    pnp = pnp[np.where(pnp[:, 2] < range_limit[5])]
+
     return pnp
+
+
+def in_range(max, min, v):
+    return v < max and v > min
 
 
 def read_label(f):
@@ -88,6 +103,12 @@ def read_label(f):
         width = float(l[1][6])
         height = float(l[1][7])
         ry = float(l[1][8])
+
+        if not in_range(range_limit[3], range_limit[0], pos[0]) \
+                or not in_range(range_limit[4], range_limit[1], pos[1]) \
+                or not in_range(range_limit[5], range_limit[2], pos[2]):
+            continue
+
         det_lines.append('%s %d %d %d %d %d %d %d %f %f %f %f %f %f %f\n' % (
             ctype, 0, 0, 0, 1, 2, 3, 4, height, width, length, pos[0], pos[1], pos[2], ry))
         dets.append([pos[0], pos[1], pos[2], length, width, height, ry])
@@ -96,8 +117,8 @@ def read_label(f):
 
 
 if __name__ == '__main__':
-    points = read_txt('point.txt')
-    labels = np.array(read_label('anno.txt'))
+    points = read_txt('point_216.txt')
+    labels = np.array(read_label('anno_216.txt'))
     boxes = boxes_to_corners_3d(labels)
 
     geometry = []
