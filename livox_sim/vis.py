@@ -115,10 +115,28 @@ def read_label(f):
 
     return dets
 
+def read_kitti_label(f):
+    la = pd.read_csv(f, sep=" ", header=None)
+    dets = []
+    for l in la.iterrows():
+        l = l[1]
+        pos = l[11:14].to_numpy().astype(np.float32)
+        length = float(l[10])
+        width = float(l[9])
+        height = float(l[8])
+        ry = float(l[14])
+        dets.append([pos[0], pos[1], pos[2], length, width, height, ry])
+
+    return dets
+        
 
 if __name__ == '__main__':
-    points = read_txt('point_216.txt')
-    labels = np.array(read_label('anno_216.txt'))
+    # points = read_txt('point_216.txt')
+    # labels = np.array(read_label('anno_216.txt'))
+
+    points = np.fromfile('00000216.bin', dtype=np.float32).reshape(-1, 4)
+    labels = np.array(read_kitti_label('00000216.txt'))
+    
     boxes = boxes_to_corners_3d(labels)
 
     geometry = []
