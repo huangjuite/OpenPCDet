@@ -479,7 +479,6 @@ if __name__ == '__main__':
         from pathlib import Path
         from easydict import EasyDict
         dataset_cfg = EasyDict(yaml.safe_load(open(sys.argv[2])))
-        print(dataset_cfg.get('GET_ITEM_LIST', ['points']))
         ROOT_DIR = (Path(__file__).resolve().parent / '../../../').resolve()
         create_kitti_infos(
             dataset_cfg=dataset_cfg,
