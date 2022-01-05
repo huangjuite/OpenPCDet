@@ -8,6 +8,7 @@ from tqdm import tqdm
 from PIL import Image
 from shutil import copyfile
 import threading
+from calibration_kitti import Calibration
 
 random.seed(777)
 '''
@@ -26,11 +27,13 @@ points_path = pjoin(main_path, 'points')
 label_path = pjoin(main_path, 'anno')
 image_sample = np.zeros((376, 1241, 3), dtype=np.uint8)
 
-label_map = {'car': 'Car', 'truck': 'Car', 'bus': 'Car',
-             'bimo': 'Cyclist', 'pedestrian': 'Pedestrian'}
+# label_map = {'car': 'Car', 'truck': 'Car', 'bus': 'Car',
+#              'bimo': 'Cyclist', 'pedestrian': 'Pedestrian'}
+label_map = {'car': 'Car', 'bimo': 'Cyclist', 'pedestrian': 'Pedestrian'}
 
 range_limit = [0, -40, -3, 70, 40, 1]
 
+calib = Calibration(calib_sample)
 
 def read_txt(f):
     pnp = pd.read_csv(f, sep=",", header=None).to_numpy().astype(
@@ -58,15 +61,18 @@ def read_label(f):
             continue
         ctype = label_map[l[1][1]]
         pos = l[1][2:5].to_numpy().astype(np.float32)
-        length = float(l[1][5])
-        width = float(l[1][6])
-        height = float(l[1][7])
-        ry = float(l[1][8])
 
         if not in_range(range_limit[3], range_limit[0], pos[0]) \
                 or not in_range(range_limit[4], range_limit[1], pos[1]) \
                 or not in_range(range_limit[5], range_limit[2], pos[2]):
             continue
+
+        pos = calib.lidar_to_rect(np.expand_dims(pos, axis=0))[0]
+        length = float(l[1][6])
+        width = float(l[1][5])
+        height = float(l[1][7])
+        pos[2] -= height/2.0
+        ry = float(l[1][8])
 
         det_lines.append('%s %d %d %d %d %d %d %d %f %f %f %f %f %f %f\n' % (
             ctype, 0, 0, 0, 1, 2, 51, 52, height, width, length, pos[0], pos[1], pos[2], ry))
@@ -98,7 +104,6 @@ if __name__ == '__main__':
     pfiles.sort()
 
     frame_list = []
-    
 
     def make_data(f):
         print(f)
@@ -136,7 +141,7 @@ if __name__ == '__main__':
 
     for thr in threads:
         thr.join()
-
+    
     random.shuffle(frame_list)
     train_num = int(len(frame_list) * 0.8)
     train_list = frame_list[:train_num]
@@ -145,4 +150,3 @@ if __name__ == '__main__':
     val_list.sort()
     write_lines(train_list, pjoin(sets_dir, 'train.txt'))
     write_lines(val_list, pjoin(sets_dir, 'val.txt'))
-    

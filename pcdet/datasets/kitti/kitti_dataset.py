@@ -191,7 +191,10 @@ class KittiDataset(DatasetTemplate):
                 loc = annotations['location'][:num_objects]
                 dims = annotations['dimensions'][:num_objects]
                 rots = annotations['rotation_y'][:num_objects]
+                
                 loc_lidar = calib.rect_to_lidar(loc)
+                # loc_lidar = loc
+
                 l, h, w = dims[:, 0:1], dims[:, 1:2], dims[:, 2:3]
                 loc_lidar[:, 2] += h[:, 0] / 2
                 gt_boxes_lidar = np.concatenate([loc_lidar, l, w, h, -(np.pi / 2 + rots[..., np.newaxis])], axis=1)
@@ -202,10 +205,12 @@ class KittiDataset(DatasetTemplate):
                 if count_inside_pts:
                     points = self.get_lidar(sample_idx)
                     calib = self.get_calib(sample_idx)
-                    pts_rect = calib.lidar_to_rect(points[:, 0:3])
 
-                    fov_flag = self.get_fov_flag(pts_rect, info['image']['image_shape'], calib)
-                    pts_fov = points[fov_flag]
+                    # pts_rect = calib.lidar_to_rect(points[:, 0:3])
+                    # fov_flag = self.get_fov_flag(pts_rect, info['image']['image_shape'], calib)
+                    # pts_fov = points[fov_flag]
+                    pts_fov = points
+
                     corners_lidar = box_utils.boxes_to_corners_3d(gt_boxes_lidar)
                     num_points_in_gt = -np.ones(num_gt, dtype=np.int32)
 
